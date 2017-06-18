@@ -1,32 +1,35 @@
 #include <IRremote.h>
 #include <IRremoteInt.h>
 
-int redPin = 12;
-int greenPin = 9;
-int bluePin = 8;
 int recvPin = 6;
+int redPin = 9;
+int greenPin = 10;
+int bluePin = 11;
 
-int nextFileBtn = 11;
-int previousFileBtn = 10;
-int volDownBtn = 5;
-int volUpBtn = 4;
-int playPauseBtn = 3;
-int switchPlayerBtn = 2;
+int playPauseBtn = 8;
+int switchPlayerBtn = 7;
+int nextFileBtn = 5;
+int previousFileBtn = 4;
+int volDownBtn = 3;
+int volUpBtn = 2;
+int backwardBtn = A0;
+int forwardBtn = A1;
 
 IRrecv irrecv(recvPin);
 decode_results results;
 
-unsigned char red[] = {255, 0, 0};
-unsigned char blue[] = {0, 0, 255};
-unsigned char green[] = {0, 255, 0};
-unsigned char yellow[] = {255, 255, 0};
-unsigned char pink[] = {255, 0, 255};
-unsigned char white[] = {255, 255, 255};
-
-unsigned char standByColor[] = {0, 0, 0};
-
-int colorChangeDelay = 100;
-int buttonPressDelay = 150;
+//    red, green, blue
+int colors[7][3] =
+    {
+        {0, 0, 255},    // green
+        {255, 0, 0},    // red
+        {0, 255, 0},    // blue
+        {255, 0, 255},  // orange
+        {255, 255, 0},  // magenta
+        {0, 255, 255},  // turqoise
+        {255, 255, 255} // white
+};
+int standbyColorIndex = 1;
 
 void setup()
 {
@@ -41,145 +44,160 @@ void setup()
   pinMode(switchPlayerBtn, INPUT_PULLUP);
   pinMode(nextFileBtn, INPUT_PULLUP);
   pinMode(previousFileBtn, INPUT_PULLUP);
+  pinMode(forwardBtn, INPUT_PULLUP);
+  pinMode(backwardBtn, INPUT_PULLUP);
 
   irrecv.enableIRIn();
 }
 
-int serialInput;
-unsigned long last = millis();
-unsigned long lastCodeCaughtAt = -1;
+unsigned int pulseIndex = 255;
+int pulseStep = 5;
+int pulseMin = 20;
+int pulseMax = 255;
+bool doIncrementPulse = false;
+bool isPulsating = false;
+
+long lastIrCodeReadTime = -1;
+int lastPrintedIrCode = -1;
+
+long lastButtonPressTime = -1;
 
 void loop()
 {
   if (irrecv.decode(&results))
   {
-    if (last > 250)
-    {
-      dump(&results);
-    }
-    last = millis();
+    processIR(&results);
     irrecv.resume();
   }
 
   if (Serial.available())
   {
-    serialInput = Serial.read();
-    processSerialInput(serialInput);
+    int input = Serial.read();
+    processSerialInput(input);
   }
 
   processButtons();
-}
 
-void setStandbyColor(unsigned char color[])
-{
-  memcpy(standByColor, color, 3);
-}
-
-void setLedColor(unsigned char color[])
-{
-  analogWrite(redPin, 255 - color[0]);
-  analogWrite(greenPin, 255 - color[1]);
-  analogWrite(bluePin, 255 - color[2]);
-}
-
-int lastIrCode = -1;
-
-void dump(decode_results *results)
-{
-  int count = results->rawlen;
-  if (results->decode_type != UNKNOWN)
+  if (isPulsating)
   {
-    int irCode = results->value;
-    if (irCode == -1)
-    {
-      long intervalBetweenCodes = millis() - lastCodeCaughtAt;
-
-      if (intervalBetweenCodes < 5000)
-      {
-        printResult(lastIrCode);
-        lastCodeCaughtAt = millis();
-      }
-    }
-    else
-    {
-      printResult(irCode);
-      lastIrCode = irCode;
-      lastCodeCaughtAt = millis();
-    }
-    delay(100);
+    pulsate();
+  }
+  else
+  {
+    setColor(colors[standbyColorIndex]);
   }
 }
 
-void printResult(int value)
+void pulsate()
 {
-  if (value != -1)
+  if (!isPulsating)
   {
-    Serial.println(value);
+    return;
   }
+
+  if (pulseIndex <= pulseMax && doIncrementPulse)
+  {
+    pulseIndex = pulseIndex + pulseStep;
+
+    if (pulseIndex >= pulseMax)
+    {
+      isPulsating = false;
+      doIncrementPulse = false;
+    }
+  }
+  else
+  {
+    doIncrementPulse = false;
+    pulseIndex = pulseIndex - pulseStep;
+
+    if (pulseIndex == pulseMin)
+    {
+      doIncrementPulse = true;
+    }
+  }
+
+  int red = colors[standbyColorIndex][0];
+  if (red == 255)
+  {
+    analogWrite(redPin, pulseIndex);
+  }
+
+  int green = colors[standbyColorIndex][1];
+  if (green == 255)
+  {
+    analogWrite(greenPin, pulseIndex);
+  }
+
+  int blue = colors[standbyColorIndex][2];
+  if (blue == 255)
+  {
+    analogWrite(bluePin, pulseIndex);
+  }
+
+  delay(5);
+}
+
+void setColor(int color[])
+{
+  analogWrite(redPin, color[0]);
+  analogWrite(greenPin, color[1]);
+  analogWrite(bluePin, color[2]);
+}
+
+void processIR(decode_results *results)
+{
+  if (results->decode_type == UNKNOWN)
+  {
+    return;
+  }
+
+  int irCodeValue = results->value;
+  if (irCodeValue == -1)
+  {
+    long timeElapsedSinceLastIrCodePrint = millis() - lastIrCodeReadTime;
+    if (timeElapsedSinceLastIrCodePrint >= 45)
+    {
+      lastIrCodeReadTime = millis();
+      return;
+    }
+
+    irCodeValue = lastPrintedIrCode;
+  }
+
+  Serial.println(irCodeValue);
+
+  lastPrintedIrCode = irCodeValue;
+  lastIrCodeReadTime = millis();
 }
 
 void processSerialInput(int input)
 {
-   switch (input)
-    {
-    case 1:
-      setLedColor(red);
-      delay(colorChangeDelay);
-      break;
-    case 2:
-      setLedColor(green);
-      delay(colorChangeDelay);
-      break;
-    case 3:
-      setLedColor(blue);
-      delay(colorChangeDelay);
-      break;
-    case 4:
-      setLedColor(yellow);
-      delay(colorChangeDelay);
-      break;
-    case 5:
-      setLedColor(pink);
-      delay(colorChangeDelay);
-      break;
-    case 6:
-      setLedColor(white);
-      delay(colorChangeDelay);
-      break;
+  if (input == 15)
+  {
+    isPulsating = true;
+  }
 
-    case 11:
-      setStandbyColor(red);
-      break;
-    case 12:
-      setStandbyColor(green);
-      break;
-    case 13:
-      setStandbyColor(blue);
-      break;
-    case 14:
-      setStandbyColor(yellow);
-      break;
-    case 15:
-      setStandbyColor(pink);
-      break;
-    case 16:
-      setStandbyColor(white);
-      break;
-    }
-
-    setLedColor(standByColor);
+  if (input > 0 && input < 6)
+  {
+    standbyColorIndex = input;
+  }
 }
 
 bool isButtonPressed(int buttonPin)
 {
   if (digitalRead(buttonPin) == LOW)
   {
-    delay(10);
-    if (digitalRead(buttonPin) == LOW)
+    long timeElapsedSinceLastButtonPress = millis() - lastButtonPressTime;
+    if (timeElapsedSinceLastButtonPress < 200)
     {
-      return true;
+      return false;
     }
+
+    lastButtonPressTime = millis();
+
+    return true;
   }
+
   return false;
 }
 
@@ -187,37 +205,41 @@ void processButtons()
 {
   if (isButtonPressed(switchPlayerBtn))
   {
-    printResult(21538);
-    delay(buttonPressDelay);
+    Serial.println(21538);
   }
 
   if (isButtonPressed(playPauseBtn))
   {
-    printResult(9766);
-    delay(buttonPressDelay);
+    Serial.println(9766);
   }
 
   if (isButtonPressed(volUpBtn))
   {
-    printResult(9250);
-    delay(buttonPressDelay);
+    Serial.println(9250);
   }
 
   if (isButtonPressed(volDownBtn))
   {
-    printResult(25634);
-    delay(buttonPressDelay);
+    Serial.println(25634);
   }
 
   if (isButtonPressed(nextFileBtn))
   {
-    printResult(17958);
-    delay(buttonPressDelay);
+    Serial.println(17958);
   }
 
   if (isButtonPressed(previousFileBtn))
   {
-    printResult(1574);
-    delay(buttonPressDelay);
+    Serial.println(1574);
+  }
+
+  if (isButtonPressed(forwardBtn))
+  {
+    Serial.println(26406);
+  }
+
+  if (isButtonPressed(backwardBtn))
+  {
+    Serial.println(5926);
   }
 }
