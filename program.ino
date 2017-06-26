@@ -2,9 +2,9 @@
 #include <IRremoteInt.h>
 
 int recvPin = 6;
-int redPin = 9;
+int redPin = 11;
 int greenPin = 10;
-int bluePin = 11;
+int bluePin = 9;
 
 int playPauseBtn = 8;
 int switchPlayerBtn = 7;
@@ -14,6 +14,7 @@ int volDownBtn = 3;
 int volUpBtn = 2;
 int backwardBtn = A0;
 int forwardBtn = A1;
+int changeWallpaperBtn = A2;
 
 IRrecv irrecv(recvPin);
 decode_results results;
@@ -46,6 +47,7 @@ void setup()
   pinMode(previousFileBtn, INPUT_PULLUP);
   pinMode(forwardBtn, INPUT_PULLUP);
   pinMode(backwardBtn, INPUT_PULLUP);
+  pinMode(changeWallpaperBtn, INPUT_PULLUP);
 
   irrecv.enableIRIn();
 }
@@ -172,7 +174,8 @@ void processIR(decode_results *results)
 
 void processSerialInput(int input)
 {
-  if (input == 15)
+ // if (input == 15)
+  if (input == 49) // for debug type 1
   {
     isPulsating = true;
   }
