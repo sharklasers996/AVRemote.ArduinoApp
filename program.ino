@@ -1,20 +1,21 @@
 #include <IRremote.h>
 #include <IRremoteInt.h>
 
-int recvPin = 6;
-int redPin = 11;
+int recvPin = 8;
+int redPin = 9;
 int greenPin = 10;
-int bluePin = 9;
+int bluePin = 11;
 
-int playPauseBtn = 8;
-int switchPlayerBtn = 7;
-int nextFileBtn = 5;
-int previousFileBtn = 4;
-int volDownBtn = 3;
-int volUpBtn = 2;
-int backwardBtn = A0;
-int forwardBtn = A1;
-int changeWallpaperBtn = A2;
+int previousFileBtn = A0;
+int volUpBtn = A1;
+int backwardBtn = A2;
+int volDownBtn = A3;
+int playPauseBtn = A4;
+
+int changeWallpaperBtn = 4;
+int switchPlayerBtn = 5;
+int forwardBtn = 6;
+int nextFileBtn = 7;
 
 IRrecv irrecv(recvPin);
 decode_results results;
@@ -22,15 +23,14 @@ decode_results results;
 //    red, green, blue
 int colors[7][3] =
     {
-        {0, 0, 255},    // green
-        {255, 0, 0},    // red
-        {0, 255, 0},    // blue
-        {255, 0, 255},  // orange
-        {255, 255, 0},  // magenta
-        {0, 255, 255},  // turqoise
-        {255, 255, 255} // white
+        {255, 0, 255}, // green
+        {0, 255, 255}, // red
+        {255, 255, 0}, // blue
+        {0, 0, 255},   // yellow
+        {0, 255, 0},   // pink
+        {0, 0, 0}      // white
 };
-int standbyColorIndex = 1;
+int standbyColorIndex = 2;
 
 void setup()
 {
@@ -133,7 +133,14 @@ void pulsate()
   int blue = colors[standbyColorIndex][2];
   if (blue == 255)
   {
-    analogWrite(bluePin, pulseIndex);
+    if (pulseIndex == 225)
+    {
+      analogWrite(bluePin, 0);
+    }
+    else
+    {
+      analogWrite(bluePin, 255);
+    }
   }
 
   delay(5);
@@ -174,8 +181,8 @@ void processIR(decode_results *results)
 
 void processSerialInput(int input)
 {
- // if (input == 15)
-  if (input == 49) // for debug type 1
+  if (input == 15)
+  //if (input == 49) // for debug type 1
   {
     isPulsating = true;
   }
@@ -244,5 +251,11 @@ void processButtons()
   if (isButtonPressed(backwardBtn))
   {
     Serial.println(5926);
+  }
+
+  if (isButtonPressed(changeWallpaperBtn))
+  {
+    Serial.println(802);
+    `
   }
 }
