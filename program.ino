@@ -160,10 +160,16 @@ void processIR(decode_results *results)
     return;
   }
 
+  long timeElapsedSinceLastIrCodePrint = millis() - lastIrCodeReadTime;
+  if (timeElapsedSinceLastIrCodePrint < 50)
+  {
+    lastIrCodeReadTime = millis();
+    return;
+  }
+
   int irCodeValue = results->value;
   if (irCodeValue == -1)
   {
-    long timeElapsedSinceLastIrCodePrint = millis() - lastIrCodeReadTime;
     if (timeElapsedSinceLastIrCodePrint >= 45)
     {
       lastIrCodeReadTime = millis();
@@ -256,6 +262,5 @@ void processButtons()
   if (isButtonPressed(changeWallpaperBtn))
   {
     Serial.println(802);
-    `
   }
 }
