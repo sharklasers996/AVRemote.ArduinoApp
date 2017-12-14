@@ -61,6 +61,7 @@ bool isPulsating = false;
 
 long lastIrCodeReadTime = -1;
 int lastPrintedIrCode = -1;
+long lastDuplicateIrCodeReadTime = 0;
 
 long lastButtonPressTime = -1;
 
@@ -160,23 +161,29 @@ void processIR(decode_results *results)
     return;
   }
 
-  long timeElapsedSinceLastIrCodePrint = millis() - lastIrCodeReadTime;
-  if (timeElapsedSinceLastIrCodePrint < 50)
+  if (lastIrCodeReadTime != -1)
   {
-    lastIrCodeReadTime = millis();
-    return;
+    long timeElapsedSinceLastIrCodePrint = millis() - lastIrCodeReadTime;
+    if (timeElapsedSinceLastIrCodePrint >= 44 && timeElapsedSinceLastIrCodePrint <= 50)
+    {
+      delay(1);
+      lastIrCodeReadTime = millis();
+      return;
+    }
   }
 
   int irCodeValue = results->value;
   if (irCodeValue == -1)
   {
-    if (timeElapsedSinceLastIrCodePrint >= 45)
+    long timeElapsedSinceLastDuplicateIrCodePrint = millis() - lastDuplicateIrCodeReadTime;
+    irCodeValue = lastPrintedIrCode;
+
+    lastDuplicateIrCodeReadTime = millis();
+
+    if (timeElapsedSinceLastDuplicateIrCodePrint >= 45)
     {
-      lastIrCodeReadTime = millis();
       return;
     }
-
-    irCodeValue = lastPrintedIrCode;
   }
 
   Serial.println(irCodeValue);
