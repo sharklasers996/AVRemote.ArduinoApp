@@ -204,6 +204,11 @@ void processSerialInput(int input)
   {
     standbyColorIndex = input;
   }
+
+  if (input == 42)
+  {
+    Serial.println("This is remote!");
+  }
 }
 
 bool isButtonPressed(int buttonPin)
