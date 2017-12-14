@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/ponxaspx/Downloads/arduino-1.8.3/hardware/arduino/avr/cores/arduino",
+                "/home/ponaspx/Documents/Arduino/arduino-1.8.3/hardware/arduino/avr/cores/arduino"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": false,
+                "path": [
+                    "/home/ponxaspx/Downloads/arduino-1.8.3/hardware/arduino/avr/cores/arduino",
+                    "${workspaceRoot}"
+                ]
+            },
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 3
+}
