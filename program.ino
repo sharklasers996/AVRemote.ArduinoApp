@@ -30,7 +30,7 @@ int colors[7][3] =
         {0, 255, 0},   // pink
         {0, 0, 0}      // white
 };
-int standbyColorIndex = 2;
+int standbyColorIndex = 0;
 
 void setup()
 {
@@ -65,6 +65,8 @@ long lastDuplicateIrCodeReadTime = 0;
 
 long lastButtonPressTime = -1;
 
+bool sleeping = false;
+
 void loop()
 {
   if (irrecv.decode(&results))
@@ -81,13 +83,20 @@ void loop()
 
   processButtons();
 
-  if (isPulsating)
+  if (sleeping)
   {
-    pulsate();
+    turnLightOff();
   }
   else
   {
-    setColor(colors[standbyColorIndex]);
+    if (isPulsating)
+    {
+      pulsate();
+    }
+    else
+    {
+      setColor(colors[standbyColorIndex]);
+    }
   }
 }
 
@@ -154,6 +163,17 @@ void setColor(int color[])
   analogWrite(bluePin, color[2]);
 }
 
+void turnLightOff()
+{
+  pinMode(redPin, INPUT);
+  pinMode(greenPin, INPUT);
+  pinMode(bluePin, INPUT);
+  delay(10);
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
+}
+
 void processIR(decode_results *results)
 {
   if (results->decode_type == UNKNOWN)
@@ -200,7 +220,7 @@ void processSerialInput(int input)
     isPulsating = true;
   }
 
-  if (input > 0 && input < 6)
+  if (input >= 0 && input <= 5)
   {
     standbyColorIndex = input;
   }
@@ -208,6 +228,11 @@ void processSerialInput(int input)
   if (input == 42)
   {
     Serial.println("This is remote!");
+  }
+
+  if (input == 22)
+  {
+    sleeping = !sleeping;
   }
 }
 
