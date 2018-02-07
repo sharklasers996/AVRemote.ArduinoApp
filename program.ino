@@ -232,7 +232,12 @@ void processSerialInput(int input)
 
   if (input == 22)
   {
-    sleeping = !sleeping;
+    sleeping = true;
+  }
+
+  if (input == 23)
+  {
+    sleeping = false;
   }
 }
 
