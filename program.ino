@@ -67,6 +67,9 @@ long lastButtonPressTime = -1;
 
 bool sleeping = false;
 
+int serialPrintCount = 0;
+long lastSerialPrintTime = -1;
+
 void loop()
 {
   if (irrecv.decode(&results))
@@ -206,7 +209,7 @@ void processIR(decode_results *results)
     }
   }
 
-  Serial.println(irCodeValue);
+  serialPrint(irCodeValue);
 
   lastPrintedIrCode = irCodeValue;
   lastIrCodeReadTime = millis();
@@ -263,46 +266,62 @@ void processButtons()
 {
   if (isButtonPressed(switchPlayerBtn))
   {
-    Serial.println(21538);
+    serialPrint(21538);
   }
 
   if (isButtonPressed(playPauseBtn))
   {
-    Serial.println(9766);
+    serialPrint(9766);
   }
 
   if (isButtonPressed(volUpBtn))
   {
-    Serial.println(9250);
+    serialPrint(9250);
   }
 
   if (isButtonPressed(volDownBtn))
   {
-    Serial.println(25634);
+    serialPrint(25634);
   }
 
   if (isButtonPressed(nextFileBtn))
   {
-    Serial.println(17958);
+    serialPrint(17958);
   }
 
   if (isButtonPressed(previousFileBtn))
   {
-    Serial.println(1574);
+    serialPrint(1574);
   }
 
   if (isButtonPressed(forwardBtn))
   {
-    Serial.println(26406);
+    serialPrint(26406);
   }
 
   if (isButtonPressed(backwardBtn))
   {
-    Serial.println(5926);
+    serialPrint(5926);
   }
 
   if (isButtonPressed(changeWallpaperBtn))
   {
-    Serial.println(802);
+    serialPrint(802);
   }
+}
+
+void serialPrint(int code)
+{
+  serialPrintCount++;
+
+  long timeElapsedSinceSerialPrint = millis() - lastSerialPrintTime;
+
+  if (serialPrintCount > 5 && timeElapsedSinceSerialPrint < 100)
+  {
+    delay(1);
+    return;
+  }
+
+  Serial.println(code);
+  lastSerialPrintTime = millis();
 }

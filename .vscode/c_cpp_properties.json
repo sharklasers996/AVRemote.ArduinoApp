@@ -3,12 +3,14 @@
         {
             "name": "Linux",
             "includePath": [
+                "/home/ponaspx/.arduino15/packages/arduino/hardware/avr/1.6.18/cores/arduino",
                 "/home/ponxaspx/Downloads/arduino-1.8.3/hardware/arduino/avr/cores/arduino",
                 "/home/ponaspx/Documents/Arduino/arduino-1.8.3/hardware/arduino/avr/cores/arduino"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": false,
                 "path": [
+                    "/home/ponaspx/.arduino15/packages/arduino/hardware/avr/1.6.18/cores/arduino",
                     "/home/ponxaspx/Downloads/arduino-1.8.3/hardware/arduino/avr/cores/arduino",
                     "${workspaceRoot}"
                 ]
@@ -16,5 +18,5 @@
             "intelliSenseMode": "clang-x64"
         }
     ],
-    "version": 3
+    "version": 4
 }
