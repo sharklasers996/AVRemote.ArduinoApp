@@ -187,6 +187,11 @@ void processIR(decode_results *results)
   if (lastIrCodeReadTime != -1)
   {
     long timeElapsedSinceLastIrCodePrint = millis() - lastIrCodeReadTime;
+
+    // timeElapsedSinceLastIrCodePrint
+    // Old remote this time varies between 42 and 43
+    // New remote this time varies between 106 and 108
+
     if (timeElapsedSinceLastIrCodePrint >= 44 && timeElapsedSinceLastIrCodePrint <= 50)
     {
       delay(1);
@@ -203,7 +208,10 @@ void processIR(decode_results *results)
 
     lastDuplicateIrCodeReadTime = millis();
 
-    if (timeElapsedSinceLastDuplicateIrCodePrint >= 45)
+    // timeElapsedSinceLastDuplicateIrCodePrint
+    // Old remote this time is around 7500 and value used was 45
+    // New remote this time is around 5000 and value used was 200
+    if (timeElapsedSinceLastDuplicateIrCodePrint >= 200)
     {
       return;
     }
@@ -266,47 +274,56 @@ void processButtons()
 {
   if (isButtonPressed(switchPlayerBtn))
   {
-    serialPrint(21538);
+    // serialPrint(21538);
+    serialPrint(255);
   }
 
   if (isButtonPressed(playPauseBtn))
   {
-    serialPrint(9766);
+    //serialPrint(9766);
+    serialPrint(2805);
   }
 
   if (isButtonPressed(volUpBtn))
   {
-    serialPrint(9250);
+    // serialPrint(9250);
+    serialPrint(-5611);
   }
 
   if (isButtonPressed(volDownBtn))
   {
-    serialPrint(25634);
+    //  serialPrint(25634);
+    serialPrint(2295);
   }
 
   if (isButtonPressed(nextFileBtn))
   {
-    serialPrint(17958);
+    //serialPrint(17958);
+    serialPrint(6375);
   }
 
   if (isButtonPressed(previousFileBtn))
   {
-    serialPrint(1574);
+    // serialPrint(1574);
+    serialPrint(10455);
   }
 
   if (isButtonPressed(forwardBtn))
   {
-    serialPrint(26406);
+    // serialPrint(26406);
+    serialPrint(20655);
   }
 
   if (isButtonPressed(backwardBtn))
   {
-    serialPrint(5926);
+    //  serialPrint(5926);
+    serialPrint(-1531);
   }
 
   if (isButtonPressed(changeWallpaperBtn))
   {
-    serialPrint(802);
+    // serialPrint(802);
+    serialPrint(31365);
   }
 }
 
